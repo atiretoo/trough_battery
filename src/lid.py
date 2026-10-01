@@ -2,15 +2,16 @@ import cadquery as cq
 import os
 
 def create_lid():
-    outer_length = 92.0
-    outer_width = 103.5 # Updated outer width based on 97.5mm inner width
+    # Box outer dimensions: 93.6 L x 105.5 W
+    outer_length = 93.6
+    outer_width = 105.5
     
     lid_thickness = 2.0
     inset_depth = 1.0
     
     # Inset dims (0.5 mm gap on all sides)
-    # Box inner dimensions: 86.0 L x 97.5 W
-    inset_length = 85.0
+    # Box inner dimensions: 87.2 L x 97.5 W
+    inset_length = 86.2
     inset_width = 96.5
     
     lid = cq.Workplane("XY").box(outer_length, outer_width, lid_thickness)
@@ -22,13 +23,14 @@ def create_lid():
         .extrude(inset_depth)
     )
     
-    slit_width_y = 101.5 # Updated to match 101.5mm groove width
+    slit_width_y = 101.5 # Matches 101.5mm groove width
     slit_thickness_x = 1.0
     
+    # Slit centers aligned with outer electrode grooves at +/- 43.35 mm
     lid = (
         lid.faces(">Z")
         .workplane()
-        .pushPoints([(-42.75, 0), (42.75, 0)])
+        .pushPoints([(-43.35, 0), (43.35, 0)])
         .rect(slit_thickness_x, slit_width_y)
         .cutThruAll()
     )

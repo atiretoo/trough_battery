@@ -3,25 +3,26 @@ import os
 
 def create_test_box():
     num_cells = 2               
-    box_height = 20.0           
     
     inner_width = 97.5          
     groove_depth_sides = 2.0    
     groove_depth_bottom = 2.0   
     groove_thickness = 0.5      
     
-    floor_thickness = 3.0       
-    wall_thickness = 3.0        
-    internal_wall_thickness = 2.0
+    # Wall and floor dimensions optimized for 0.4 mm nozzle and 0.25 mm layer height
+    floor_thickness = 4.0               # 16 layers @ 0.25 mm (leaves 2.0 mm under groove)
+    side_wall_thickness = 4.0           # 10 perimeters @ 0.4 mm (leaves 2.0 mm behind groove)
+    end_wall_thickness = 3.2            # 8 perimeters @ 0.4 mm (smallest multiple >= 3.0 mm)
+    internal_wall_thickness = 2.4       # 6 perimeters @ 0.4 mm (smallest even multiple >= 2.0 mm)
     
-    internal_wall_height = box_height - floor_thickness - 5.0 # 12.0 mm
     cell_length = 20.0          
+    internal_wall_height = 12.0
+    top_cut_height = 5.0                # 5.0 mm clearance/freeboard below top rim
+    box_height = floor_thickness + internal_wall_height + top_cut_height # 21.0 mm
     
     # Electrolyte fill line ridge parameters (SCALED DOWN FOR TEST PRINT)
-    # The real one is at 98mm. We will put this one at 7mm from the floor
-    # so you can verify how well the 4-layer 0.28mm slope overhang prints!
     test_electrolyte_level = 7.0
-    ridge_z_top = floor_thickness + test_electrolyte_level # 10.0
+    ridge_z_top = floor_thickness + test_electrolyte_level # 11.0
     ridge_width = 0.4       # 1 perimeter line width
     ridge_height = 1.12     # 4 layers of 0.28mm
     ridge_length = 10.0
@@ -29,10 +30,10 @@ def create_test_box():
     
     # Derived
     groove_cut_width = inner_width + (2 * groove_depth_sides) # 101.5 mm
-    outer_width = inner_width + (2 * wall_thickness)          # 103.5 mm
+    outer_width = inner_width + (2 * side_wall_thickness)     # 105.5 mm
     
-    inner_length = (num_cells * cell_length) + ((num_cells - 1) * internal_wall_thickness) # 42.0
-    outer_length = inner_length + (2 * wall_thickness)   # 48.0
+    inner_length = (num_cells * cell_length) + ((num_cells - 1) * internal_wall_thickness) # 42.4 mm
+    outer_length = inner_length + (2 * end_wall_thickness)    # 48.8 mm
     
     trough = (
         cq.Workplane("XY")
@@ -40,8 +41,7 @@ def create_test_box():
         .translate((0, 0, box_height / 2))
     )
     
-    top_cut_height = box_height - floor_thickness - internal_wall_height # 5.0
-    top_cut_z_center = box_height - (top_cut_height / 2) # 17.5
+    top_cut_z_center = box_height - (top_cut_height / 2) # 18.5 mm
     
     top_cutout = (
         cq.Workplane("XY")
@@ -119,16 +119,16 @@ def create_test_box():
     return trough
 
 def create_test_lid():
-    outer_length = 48.0
-    outer_width = 103.5 
-    inset_length = 41.0
+    outer_length = 48.8
+    outer_width = 105.5 
+    inset_length = 41.4
     inset_width = 96.5  
     lid_thickness = 2.0
     inset_depth = 1.0
     
     lid = cq.Workplane("XY").box(outer_length, outer_width, lid_thickness)
     lid = lid.faces("<Z").workplane().rect(inset_length, inset_width).extrude(inset_depth)
-    lid = lid.faces(">Z").workplane().pushPoints([(-20.75, 0), (20.75, 0)]).rect(1.0, 101.5).cutThruAll()
+    lid = lid.faces(">Z").workplane().pushPoints([(-20.95, 0), (20.95, 0)]).rect(1.0, 101.5).cutThruAll()
     return lid
 
 if __name__ == "__main__":
