@@ -124,13 +124,19 @@ def create_test_box():
 def create_test_lid():
     outer_length = 48.8
     outer_width = 105.5 
-    inset_length = 41.4
-    inset_width = 96.5  
+    
     lid_thickness = 2.0
-    inset_depth = 1.0
+    inset_depth = 2.5      # Engages 2.5 mm into the 5.0 mm top freeboard
+    draft_angle = 4.0      # 4° draft angle taper for self-centering and easy removal
+    clearance_top = 0.15   # 0.15 mm clearance per side at shoulder
+    
+    inner_length = 42.4
+    inner_width = 97.5
+    inset_length_top = inner_length - (2 * clearance_top) # 42.1 mm
+    inset_width_top = inner_width - (2 * clearance_top)   # 97.2 mm
     
     lid = cq.Workplane("XY").box(outer_length, outer_width, lid_thickness).edges("|Z").fillet(2.5)
-    lid = lid.faces("<Z").workplane().rect(inset_length, inset_width).extrude(inset_depth)
+    lid = lid.faces("<Z").workplane().rect(inset_length_top, inset_width_top).extrude(inset_depth, taper=draft_angle)
     lid = lid.faces(">Z").workplane().pushPoints([(-20.95, 0), (20.95, 0)]).rect(1.0, 101.5).cutThruAll()
     return lid
 
