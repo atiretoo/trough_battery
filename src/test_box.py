@@ -35,10 +35,13 @@ def create_test_box():
     inner_length = (num_cells * cell_length) + ((num_cells - 1) * internal_wall_thickness) # 42.4 mm
     outer_length = inner_length + (2 * end_wall_thickness)    # 48.8 mm
     
+    # Base solid block with outside vertical and build-plate fillets
     trough = (
         cq.Workplane("XY")
         .box(outer_length, outer_width, box_height)
         .translate((0, 0, box_height / 2))
+        .edges("|Z or <Z")
+        .fillet(2.5)
     )
     
     top_cut_z_center = box_height - (top_cut_height / 2) # 18.5 mm
@@ -126,7 +129,7 @@ def create_test_lid():
     lid_thickness = 2.0
     inset_depth = 1.0
     
-    lid = cq.Workplane("XY").box(outer_length, outer_width, lid_thickness)
+    lid = cq.Workplane("XY").box(outer_length, outer_width, lid_thickness).edges("|Z").fillet(2.5)
     lid = lid.faces("<Z").workplane().rect(inset_length, inset_width).extrude(inset_depth)
     lid = lid.faces(">Z").workplane().pushPoints([(-20.95, 0), (20.95, 0)]).rect(1.0, 101.5).cutThruAll()
     return lid

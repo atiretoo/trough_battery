@@ -36,11 +36,13 @@ def create_trough_battery():
     inner_length = (num_cells * cell_length) + ((num_cells - 1) * internal_wall_thickness) # 87.2 mm
     outer_length = inner_length + (2 * end_wall_thickness)     # 93.6 mm
     
-    # 1. Base solid block
+    # 1. Base solid block with outside vertical and build-plate fillets
     trough = (
         cq.Workplane("XY")
         .box(outer_length, outer_width, box_height)
         .translate((0, 0, box_height / 2))
+        .edges("|Z or <Z")
+        .fillet(2.5)
     )
     
     # 2. Top Cutout (freeboard)

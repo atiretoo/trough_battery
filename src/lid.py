@@ -14,7 +14,12 @@ def create_lid():
     inset_length = 86.2
     inset_width = 96.5
     
-    lid = cq.Workplane("XY").box(outer_length, outer_width, lid_thickness)
+    lid = (
+        cq.Workplane("XY")
+        .box(outer_length, outer_width, lid_thickness)
+        .edges("|Z")
+        .fillet(2.5)
+    )
     
     lid = (
         lid.faces("<Z")
