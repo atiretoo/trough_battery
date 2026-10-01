@@ -1,5 +1,6 @@
 import cadquery as cq
 import os
+import math
 
 def create_test_box():
     num_cells = 2               
@@ -127,17 +128,21 @@ def create_test_lid():
     
     lid_thickness = 2.0
     inset_depth = 2.5      # Engages 2.5 mm into the 5.0 mm top freeboard
-    draft_angle = 4.0      # 4° draft angle taper for self-centering and easy removal
-    clearance_top = 0.15   # 0.15 mm clearance per side at shoulder
+    clearance_tip = 0.15   # 0.15 mm clearance per side at bottom tip (42.1 x 97.2 mm)
     
     inner_length = 42.4
     inner_width = 97.5
-    inset_length_top = inner_length - (2 * clearance_top) # 42.1 mm
-    inset_width_top = inner_width - (2 * clearance_top)   # 97.2 mm
+    
+    # Calculate draft angle so inset flares out from tip (42.1 x 97.2) to shoulder (42.4 x 97.5)
+    draft_angle = math.degrees(math.atan(clearance_tip / inset_depth)) # ~3.43°
     
     lid = cq.Workplane("XY").box(outer_length, outer_width, lid_thickness).edges("|Z").fillet(2.5)
-    lid = lid.faces("<Z").workplane().rect(inset_length_top, inset_width_top).extrude(inset_depth, taper=draft_angle)
-    lid = lid.faces(">Z").workplane().pushPoints([(-20.95, 0), (20.95, 0)]).rect(1.0, 101.5).cutThruAll()
+    lid = lid.faces("<Z").workplane().rect(inner_length, inner_width).extrude(inset_depth, taper=draft_angle)
+    
+    slit_width_y = 20.0  # Reduced to center 20 mm to preserve end walls of inset and stop end-to-end slop
+    slit_thickness_x = 1.0
+    
+    lid = lid.faces(">Z").workplane().pushPoints([(-20.95, 0), (20.95, 0)]).rect(slit_thickness_x, slit_width_y).cutThruAll()
     return lid
 
 if __name__ == "__main__":
