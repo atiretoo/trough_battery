@@ -8,15 +8,17 @@ def create_lid():
     outer_width = 105.5
     
     lid_thickness = 2.0
-    inset_depth = 2.5      # Engages 2.5 mm into the 5.0 mm top freeboard
+    inset_depth = 2.5      # Total depth into the 5.0 mm top freeboard
+    band_height = 0.50     # 2 layers @ 0.25 mm: straight collar at nominal zero clearance
+    taper_height = inset_depth - band_height # 2.0 mm: tapered lead-in
     clearance_tip = 0.15   # 0.15 mm clearance per side at bottom tip (86.9 x 97.2 mm)
     
     # Box inner dimensions: 87.2 L x 97.5 W
     inner_length = 87.2
     inner_width = 97.5
     
-    # Calculate draft angle so inset flares out from tip (86.9 x 97.2) to shoulder (87.2 x 97.5)
-    draft_angle = math.degrees(math.atan(clearance_tip / inset_depth)) # ~3.43°
+    # Calculate draft angle so taper narrows from collar (87.2 x 97.5) down to tip (86.9 x 97.2)
+    draft_angle = math.degrees(math.atan(clearance_tip / taper_height)) # ~4.29°
     
     lid = (
         cq.Workplane("XY")
@@ -25,12 +27,20 @@ def create_lid():
         .fillet(2.5)
     )
     
-    # Extrude tapered inset plug from shoulder (87.2 x 97.5) narrowing down to tip (86.9 x 97.2)
+    # 1. Straight collar at nominal zero clearance for top 2 layers (0.5 mm)
     lid = (
         lid.faces("<Z")
         .workplane()
         .rect(inner_length, inner_width)
-        .extrude(inset_depth, taper=draft_angle)
+        .extrude(band_height)
+    )
+    
+    # 2. Tapered plug below collar narrowing down to 0.15 mm clearance at tip
+    lid = (
+        lid.faces("<Z")
+        .workplane()
+        .rect(inner_length, inner_width)
+        .extrude(taper_height, taper=draft_angle)
     )
     
     slit_width_y = 20.0  # Reduced to center 20 mm to preserve end walls of inset and stop end-to-end slop
