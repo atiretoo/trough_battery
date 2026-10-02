@@ -27,6 +27,54 @@ def create_lid():
         .fillet(2.5)
     )
     
+    # Side grip ears (centered at X=0 on both sides, 24 mm arc span, 2.0 mm overhang, <= 45° slope on underside)
+    y_wall = outer_width / 2 # 52.75 mm
+    ear_overhang = 2.0       # 2.0 mm overhang across 2.0 mm lip height = 45° slope at apex
+    ear_span = 24.0          # 24.0 mm span along X (from -12 to +12 mm)
+    x_half = ear_span / 2    # 12.0 mm
+    
+    # Right ear (+Y)
+    w1_r = (
+        cq.Workplane("XY")
+        .workplane(offset=-lid_thickness / 2)
+        .moveTo(-x_half + 2.0, y_wall - 2.0)
+        .lineTo(-x_half + 2.0, y_wall)
+        .lineTo(x_half - 2.0, y_wall)
+        .lineTo(x_half - 2.0, y_wall - 2.0)
+        .close()
+    )
+    w2_r = (
+        w1_r.workplane(offset=lid_thickness)
+        .moveTo(-x_half, y_wall - 2.0)
+        .lineTo(-x_half, y_wall)
+        .threePointArc((0.0, y_wall + ear_overhang), (x_half, y_wall))
+        .lineTo(x_half, y_wall - 2.0)
+        .close()
+    )
+    ear_right = w2_r.loft()
+    
+    # Left ear (-Y)
+    w1_l = (
+        cq.Workplane("XY")
+        .workplane(offset=-lid_thickness / 2)
+        .moveTo(-x_half + 2.0, -(y_wall - 2.0))
+        .lineTo(-x_half + 2.0, -y_wall)
+        .lineTo(x_half - 2.0, -y_wall)
+        .lineTo(x_half - 2.0, -(y_wall - 2.0))
+        .close()
+    )
+    w2_l = (
+        w1_l.workplane(offset=lid_thickness)
+        .moveTo(-x_half, -(y_wall - 2.0))
+        .lineTo(-x_half, -y_wall)
+        .threePointArc((0.0, -(y_wall + ear_overhang)), (x_half, -y_wall))
+        .lineTo(x_half, -(y_wall - 2.0))
+        .close()
+    )
+    ear_left = w2_l.loft()
+    
+    lid = lid.union(ear_right).union(ear_left)
+    
     # 1. Straight collar at nominal zero clearance for top 2 layers (0.5 mm)
     lid = (
         lid.faces("<Z")
